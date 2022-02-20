@@ -30,6 +30,7 @@ run: setup server-key ## runs go run the application
 .PHONY: test
 test:
 	## runs test after 'make run'
+	if [ -x "`command -v nmap 2>/dev/null`" ]; then nmap --script ssl-enum-ciphers -p 443 localhost; fi;
 	curl --cacert server.crt https://localhost:443/hello
 
 .PHONY: build
