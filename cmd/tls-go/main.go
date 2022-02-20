@@ -52,7 +52,7 @@ func main() {
 		Addr:         ":443",
 		Handler:      mux,
 		TLSConfig:    secureTLSConfig(),
-		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0),
+		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
 	}
 
 	err := srv.ListenAndServeTLS("server.crt", "server.key")
