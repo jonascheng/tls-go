@@ -36,28 +36,6 @@ test:
 build: clean ## build the application
 	GOOS=${GOOS} GOARCH=amd64 go build ${GORACE} -a -v -ldflags="-w -s" -o bin/${APPLICATION} cmd/${APPLICATION}/main.go
 
-.PHONY: docker-login
-docker-login: ## login docker registry
-ifndef DOCKERHUB_USERNAME
-	$(error DOCKERHUB_USERNAME not set on env)
-endif
-ifndef DOCKERHUB_PASSWORD
-	$(error DOCKERHUB_PASSWORD not set on env)
-endif
-	${DOCKER} login --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_PASSWORD}
-
-.PHONY: docker-build
-docker-build: clean ## build docker image with cache
-	${DOCKER} build --pull -t ${REGISTRY}/${APPLICATION}:${COMMIT_SHA} .
-
-.PHONY: docker-build-release
-docker-build-release: clean ## build docker image without cache (slower than make docker-build)
-	${DOCKER} build --pull --no-cache -t ${REGISTRY}/${APPLICATION}:${COMMIT_SHA} .
-
-.PHONY: docker-push
-docker-push: docker-build-release docker-login ## push the docker image to registry
-	${DOCKER} push ${REGISTRY}/${APPLICATION}:${COMMIT_SHA}
-
 .PHONY: server-key
 server-key:
 	## Key considerations for algorithm RSA ≥ 1024-bit
