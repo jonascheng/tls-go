@@ -41,7 +41,7 @@ build: clean ## build the application
 
 .PHONY: build-client
 build-client: ## build the application
-	GOOS=${GOOS} GOARCH=amd64 g++ -std=c++14 -g -lcurl client/main.cc -o bin/tls-client
+	g++ -std=c++14 -g -lcurl client/main.cc -o bin/tls-client
 
 .PHONY: server-key
 server-key:

@@ -14,8 +14,6 @@ struct Context
 {
   CURL *req;
   std::map<std::string, std::string> _headers;
-  std::vector<std::string> _cookies;
-  struct curl_slist *cookies;
   struct curl_slist *headers;
 };
 
@@ -57,12 +55,11 @@ void base_request_handle(Context *ctx, std::string host, void *out, long verbose
   // chunk = curl_slist_append(chunk, "User-Agent: curl/7.54.0");
   curl_easy_setopt(ctx->req, CURLOPT_HTTPHEADER, cc::get_user_agent("curl/7.54.0"));
 
-  // Initialize the cookie engine with a non-existent file to read from
-  // https://github.com/bagder/everything-curl/blob/master/libcurl-http-cookies.md
-  curl_easy_setopt(ctx->req, CURLOPT_COOKIEFILE, "cookie.txt");
-
-  // https://github.com/bagder/everything-curl/blob/master/libcurl-http-cookies.md
-  curl_easy_setopt(ctx->req, CURLOPT_COOKIEJAR, "cookie.txt");
+  curl_easy_setopt(ctx->req, CURLOPT_FOLLOWLOCATION, CURLPROTO_ALL);
+  curl_easy_setopt(ctx->req, CURLOPT_SSL_OPTIONS, CURLSSLOPT_ALLOW_BEAST);
+  curl_easy_setopt(ctx->req, CURLOPT_SSL_VERIFYHOST, 1);
+  curl_easy_setopt(ctx->req, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_0);
+  curl_easy_setopt(ctx->req, CURLOPT_CAINFO, "server.crt");
 }
 
 void post_request_handle(Context *ctx, std::string host, std::string data,
@@ -84,42 +81,10 @@ void post_request_handle(Context *ctx, std::string host, std::string data,
 
 void cleanup_request_handle(Context *ctx)
 {
-  if (ctx->cookies)
-    curl_slist_free_all(ctx->cookies);
   if (ctx->headers)
     curl_slist_free_all(ctx->headers);
   if (ctx->req)
     curl_easy_cleanup(ctx->req);
-}
-
-void http_get(std::string host)
-{
-  struct Context *ctx = new Context;
-  CURLcode result = CURLE_OK;
-
-  FILE *out = fopen("/dev/null", "w");
-  base_request_handle(ctx, host, (void *)out, 0);
-  result = curl_easy_perform(ctx->req);
-
-  curl_easy_getinfo(ctx->req, CURLINFO_COOKIELIST, &(ctx->cookies));
-  ctx->_cookies = cc::get_cookie_vector(ctx->cookies);
-
-  if (result != CURLE_OK)
-  {
-    fprintf(stderr, "Failed to make a GET request: %d \n", result);
-    exit(result);
-  }
-
-  // for (auto it : ctx->_headers) {
-  //   std::cout << it.first << ":" << it.second << std::endl;
-  // }
-
-  for (auto c : ctx->_cookies)
-  {
-    std::cout << c << std::endl;
-  }
-  fclose(out);
-  cleanup_request_handle(ctx);
 }
 
 void http_post(std::string host, std::string payload)
@@ -131,7 +96,7 @@ void http_post(std::string host, std::string payload)
   std::map<std::string, std::string> h;
   h["Content-Type"] = "application/json";
 
-  post_request_handle(ctx, host, payload, h, stdout, 0);
+  post_request_handle(ctx, host, payload, h, stdout, 1);
   result = curl_easy_perform(ctx->req);
 
   if (result != CURLE_OK)
@@ -146,7 +111,7 @@ void http_post(std::string host, std::string payload)
 
 int main(int argc, char **argv)
 {
-  curl_global_init(CURL_GLOBAL_ALL);
+  curl_global_init(CURL_GLOBAL_DEFAULT);
 
   http_post("https://localhost/hello", "{\"payload\":\"hello world\"}");
   return 0;
