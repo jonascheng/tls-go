@@ -36,6 +36,7 @@ test:
 .PHONY: build
 build: clean ## build the application
 	GOOS=${GOOS} GOARCH=amd64 go build ${GORACE} -a -v -ldflags="-w -s" -o bin/${APPLICATION} cmd/${APPLICATION}/main.go
+	g++ -std=c++14 -g -lcurl client/main.cc -o bin/tls-client
 
 .PHONY: server-key
 server-key:
