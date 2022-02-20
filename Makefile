@@ -30,7 +30,7 @@ run: setup server-key ## runs go run the application
 .PHONY: test
 test:
 	## runs test after 'make run'
-	curl --insecure https://localhost:443/hello
+	curl --cacert server.crt https://localhost:443/hello
 
 .PHONY: build
 build: clean ## build the application
@@ -41,7 +41,7 @@ server-key:
 	## Key considerations for algorithm RSA ≥ 1024-bit
 	if [ ! -f server.key ]; then openssl genrsa -out server.key 1024; fi;
 	## Generation of self-signed(x509) public key (PEM-encodings .pem|.crt) based on the private (.key)
-	if [ ! -f server.crt ]; then openssl req -new -x509 -key server.key -out server.crt -days 3650 -subj "/C=TW/ST=Test/L=Test/O=Test/OU=Test/CN=Test/emailAddress=Test@email"; fi;
+	if [ ! -f server.crt ]; then openssl req -new -x509 -key server.key -out server.crt -days 3650 -subj "/C=TW/ST=Test/L=Test/O=Test/OU=Test/CN=localhost/emailAddress=Test@email"; fi;
 
 .PHONY: help
 help: ## prints this help message
