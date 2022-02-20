@@ -30,7 +30,7 @@ run: setup server-key ## runs go run the application
 .PHONY: test
 test:
 	## runs test after 'make run'
-\	curl --cacert server.crt https://localhost:443/hello
+	curl --cacert server.crt https://localhost:443/hello
 
 .PHONY: build
 build: clean ## build the application
