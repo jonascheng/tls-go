@@ -2,13 +2,22 @@ package main
 
 import (
 	"crypto/tls"
+	"fmt"
 	"log"
 	"net/http"
 )
 
-func HelloServer(w http.ResponseWriter, req *http.Request) {
-	w.Header().Set("Content-Type", "text/plain")
-	w.Write([]byte("This is an example server.\n"))
+func HelloServer(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		w.Header().Set("Content-Type", "text/plain")
+		w.Write([]byte("This is an example server, request with GET\n"))
+	case "POST":
+		w.Header().Set("Content-Type", "text/plain")
+		w.Write([]byte("This is an example server, request with POST.\n"))
+	default:
+		fmt.Fprintf(w, "Sorry, only GET and POST methods are supported.")
+	}
 }
 
 func secureTLSConfig() *tls.Config {
