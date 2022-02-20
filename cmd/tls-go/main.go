@@ -11,12 +11,7 @@ func HelloServer(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte("This is an example server.\n"))
 }
 
-func main() {
-	// mux
-	mux := http.NewServeMux()
-	mux.HandleFunc("/hello", HelloServer)
-
-	// config
+func secureTLSConfig() *tls.Config {
 	config := new(tls.Config)
 	config.MinVersion = tls.VersionTLS11
 	config.PreferServerCipherSuites = true
@@ -36,11 +31,18 @@ func main() {
 		tls.TLS_AES_256_GCM_SHA384,
 		tls.TLS_CHACHA20_POLY1305_SHA256,
 	}
+	return config
+}
+
+func main() {
+	// mux
+	mux := http.NewServeMux()
+	mux.HandleFunc("/hello", HelloServer)
 
 	srv := &http.Server{
 		Addr:         ":443",
 		Handler:      mux,
-		TLSConfig:    config,
+		TLSConfig:    secureTLSConfig(),
 		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0),
 	}
 
