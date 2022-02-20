@@ -28,16 +28,20 @@ run: setup server-key ## runs go run the application
 	go run ${GORACE} cmd/${APPLICATION}/main.go
 
 .PHONY: test
-test:
+test: build-client
 	## runs test after 'make run'
 	if [ -x "`command -v nmap 2>/dev/null`" ]; then nmap --script ssl-enum-ciphers -p 443 localhost; fi;
 	curl -XGET --cacert server.crt https://localhost:443/hello
 	curl -XPOST --cacert server.crt https://localhost:443/hello
+	./bin/tls-client
 
 .PHONY: build
 build: clean ## build the application
 	GOOS=${GOOS} GOARCH=amd64 go build ${GORACE} -a -v -ldflags="-w -s" -o bin/${APPLICATION} cmd/${APPLICATION}/main.go
-	g++ -std=c++14 -g -lcurl client/main.cc -o bin/tls-client
+
+.PHONY: build-client
+build-client: ## build the application
+	GOOS=${GOOS} GOARCH=amd64 g++ -std=c++14 -g -lcurl client/main.cc -o bin/tls-client
 
 .PHONY: server-key
 server-key:
