@@ -41,6 +41,7 @@ build: clean ## build the server application
 
 .PHONY: build-client
 build-client: ## build the client application
+	mkdir -p bin
 	g++ -std=c++14 -g -lcurl client/main.cc -o bin/tls-client
 
 .PHONY: server-key
